@@ -6,6 +6,8 @@ const router = express.Router();
 const createTaskRoutes = (taskController) => {
     
     router.get('/', taskController.getAllTasks);
+
+    router.delete('/completed', taskController.deleteCompletedTasks);
     
     router.get('/:id', validateIdParam, taskController.getTaskById);
     
@@ -16,8 +18,6 @@ const createTaskRoutes = (taskController) => {
     router.delete('/:id', validateIdParam, taskController.deleteTask);
     
     router.patch('/:id/toggle', validateIdParam, taskController.toggleTaskStatus);
-    
-    router.delete('/tasks/completed', taskController.deleteCompletedTasks);
     
     return router;
 };
