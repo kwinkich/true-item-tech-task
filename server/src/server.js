@@ -3,6 +3,16 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const config = require('./config');
+const logger = require('./middleware/logger');
+const errorHandler = require('./middleware/errorHandler');
+const createTaskRoutes = require('./routes/taskRoutes');
+const TaskController = require('./controllers/TaskController');
+const TaskService = require('./services/TaskService');
+const TaskRepository = require('./repositories/TaskRepository');
+
+const taskRepository = new TaskRepository();
+const taskService = new TaskService(taskRepository);
+const taskController = new TaskController(taskService);
 
 const app = express();
 
@@ -28,10 +38,7 @@ app.use('/api', limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-});
+app.use(logger);
 
 app.get('/health', (req, res) => {
     res.json({ 
@@ -45,6 +52,7 @@ app.get('/api/ping', (req, res) => {
     res.json({ message: 'pong', timestamp: new Date().toISOString() });
 });
 
+app.use('/api/tasks', createTaskRoutes(taskController));
 
 app.get('/', (req, res) => {
     res.json({
@@ -67,16 +75,7 @@ app.use((req, res) => {
     });
 });
 
-app.use((err, req, res, next) => {
-    console.error('Error:', err.message);
-    console.error('Stack:', err.stack);
-    
-    res.status(err.status || 500).json({
-        error: err.message || 'Internal server error',
-        path: req.path,
-        timestamp: new Date().toISOString()
-    });
-});
+app.use(errorHandler);
 
 if (!config.isTest) {
     const PORT = config.port || 5000;
