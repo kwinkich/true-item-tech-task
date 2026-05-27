@@ -51,7 +51,7 @@ class TaskService {
     deleteTask(id) {
         const exists = this.taskRepository.findById(id);
         if (!exists) {
-            throw new Error('Task not found');
+            return false;
         }
         return this.taskRepository.delete(id);
     }

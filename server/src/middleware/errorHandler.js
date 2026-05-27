@@ -8,7 +8,7 @@ const errorHandler = (err, req, res, next) => {
 	if (err.message === 'Task not found') {
 			statusCode = 404;
 			errorMessage = err.message;
-	} else if (err.message.includes('Title')) {
+	} else if (err.message.includes('Title') || err.message.includes('title')) {
 			statusCode = 400;
 			errorMessage = err.message;
 	}

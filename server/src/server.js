@@ -40,6 +40,16 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(logger);
 
+if (process.env.NODE_ENV === 'test') {
+    app.post('/test/clear', (req, res) => {
+        taskRepository.clear();
+        const idGenerator = require('./utils/idGenerator');
+        idGenerator.reset();
+        console.log('🧹 Test data cleared');
+        res.json({ cleared: true });
+    });
+}
+
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'OK', 
@@ -80,14 +90,17 @@ app.use(errorHandler);
 if (!config.isTest) {
     const PORT = config.port || 5000;
     const server = app.listen(PORT, '0.0.0.0', () => {
-        console.log(`\nServer running on:`);
-        console.log(`   - http://localhost:${PORT}`);
-        console.log(`   - http://127.0.0.1:${PORT}`);
-        console.log(`\nEnvironment: ${config.nodeEnv}`);
-        console.log(`Test endpoints:`);
-        console.log(`   - GET  http://localhost:${PORT}/health`);
-        console.log(`   - GET  http://localhost:${PORT}/api/ping`);
-        console.log(`\nServer is ready!\n`);
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            console.log(`\nServer running on:`);
+            console.log(`   - http://localhost:${PORT}`);
+            console.log(`   - http://127.0.0.1:${PORT}`);
+            console.log(`\nEnvironment: ${config.nodeEnv}`);
+            console.log(`Test endpoints:`);
+            console.log(`   - GET  http://localhost:${PORT}/health`);
+            console.log(`   - GET  http://localhost:${PORT}/api/ping`);
+            console.log(`\nServer is ready!\n`);
+        });
+        
     });
     
     server.on('error', (error) => {
